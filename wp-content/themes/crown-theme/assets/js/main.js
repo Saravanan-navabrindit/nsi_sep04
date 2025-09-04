@@ -757,9 +757,12 @@ jQuery(document).ready(function ($) {
     const $popup = $('#pdp-popup'); 
     const $bridgeportPopup = $('#bridgeport-popup');
     const $popup_discount = $('#discount-popup');
+	const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
 
     // Open popup
     $('.select-quote-type-button').on('click', function (e) {
+		selected_quote_type_not_selected_msg.style.display = 'none';
+    
         e.preventDefault();
         e.stopPropagation();
 
@@ -846,7 +849,7 @@ jQuery(document).ready(function ($) {
 
     // Prevent popup itself from triggering outside click close
     $popup.on('click', function (e) {
-        e.stopPropagation();
+	    e.stopPropagation();
     });
     $popup_discount.on('click', function (e) {
         e.stopPropagation();
@@ -870,7 +873,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!submitBtn) return;
 
         const selectedInput = document.querySelector('input[name="afrfq_field_quote_types"]:checked');
-  		if (selectedInput) {
+		const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
+		 if (!selectedInput) {
+            selected_quote_type_not_selected_msg.style.display = 'block';
+            return;
+        }
+		if (selectedInput) {
             selectedId = selectedInput.value;
             selectedTitle = selectedInput.dataset.label || selectedInput.parentElement.textContent.trim();
         } 

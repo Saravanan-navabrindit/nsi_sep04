@@ -728,6 +728,9 @@ if ( ! class_exists( 'AF_R_F_Q_Main' ) ) {
 									</label><br>
 								<?php endforeach; ?>
 							</fieldset>
+							<div>
+            					<p class="quote-type-not-selected" style="display:none; color:red;">Please select a quote type!</p>
+        					</div>
 							<?php
 							echo '<a href="javascript:void(0)" rel="nofollow" data-product_id="' . intval( $product->get_ID() ) . '" data-product_sku="' . esc_attr( $product->get_sku() ) . '" class="afrfqbt_single_page single_add_to_cart_button button alt ' . esc_attr( $disable_class ) . ' product_type_' . esc_attr( $product->get_type() ) . '">Submit</a>';
 						} else {
