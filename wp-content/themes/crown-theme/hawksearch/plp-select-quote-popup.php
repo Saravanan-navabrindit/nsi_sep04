@@ -108,6 +108,10 @@
                 }
                 ?>
             </fieldset>
+             
+            <div>
+                <p class="quote-type-not-selected" style="display:none; color:red;">Please select a quote type!</p>
+            </div>
 
             <a href="javascript:void(0)" rel="nofollow"
                 class="afrfqbt button product_type_simple alt"
