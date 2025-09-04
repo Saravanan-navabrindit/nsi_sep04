@@ -101,7 +101,7 @@ $frontend_quote_fields_editable = apply_filters( 'frontend_quote_fields_editable
 				<?php
                 $quote_fields = array('PO Number', 'Address line 1', 'Address line 2', 'City', 'State/Province', 'Postcode',
                                     'Distributor', 'Distributor Contact Name', 'Distributor Contact Number or Email', 'Your Email Address',
-                                    'Customer Shipping Account Number', 'Shipping options' );
+                                    'Customer Shipping Account Number', 'Shipping options', 'Ship to Company Name' );
 
 				if ( ! isset( $field_label_map[ $label ] ) ) {
 					$display_field = true;
@@ -167,12 +167,13 @@ $frontend_quote_fields_editable = apply_filters( 'frontend_quote_fields_editable
                                 echo $label;
                                 echo $label === 'Customer Shipping Account Number' ? ' (optional)' : '';
                                 echo $label === 'PO Number' ? '<br /><small>Required for converting to Order</small>' : '';
+                                echo $label === 'Ship to Company Name' ? ' (if different from Distributor)' : '';
                                 ?>
                             </th>
                             <td class="quote-field">
                                 <input type="<?php echo $type ?>" name="<?php echo preg_replace( '/-+/', '_', sanitize_title( $label ) ); ?>"
                                        class="form-control form-control-sm mb-3" value="<?php echo esc_attr( $value ); ?>"
-                                       <?php if ( $label != 'Customer Shipping Account Number' ) echo ' required';?>
+                                       <?php if ( ! in_array( $label, array('Customer Shipping Account Number', 'Ship to Company Name') ) ) echo ' required';?>
                                     <?php if ( !$frontend_quote_fields_editable ) echo " readonly";?>>
                             </td>
                         </tr>

@@ -1042,6 +1042,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			$fields = (array) $af_fields_obj->afrfq_get_fields_enabled();
 			$nsi_notes_field_name = '';
 			$po_number_field_name = '';
+			$ship_to_company_name_field_name = '';
 			$shipping_street_address_1_field_name = '';
 			$shipping_street_address_2_field_name = '';
 			$shipping_city_field_name = '';
@@ -1056,6 +1057,8 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 					$nsi_notes_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
 				} else if ( $field_label === 'PO Number' ) {
 					$po_number_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
+				} else if ( $field_label === 'Ship to Company Name' ) {
+					$ship_to_company_name_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
 				} else if ( $field_label === 'Address line 1' ) {
 					$shipping_street_address_1_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
 				} else if ( $field_label === 'Address line 2' ) {
@@ -1083,6 +1086,10 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			if ( ! empty( $po_number_field_name ) ) {
 				$po_number = trim( get_post_meta( $quote_id, $po_number_field_name, true ) );
 				update_post_meta( $order_id, 'af_c_f_4432739', $po_number );
+			}
+			if ( ! empty( $ship_to_company_name_field_name ) ) {
+				$ship_to_company_name = get_post_meta( $quote_id, $ship_to_company_name_field_name, true );
+				update_post_meta( $order_id, '_ship_to_company_name', $ship_to_company_name );
 			}
 			if ( ! empty( $shipping_street_address_1_field_name ) ) {
 				$shipping_street_address_1 = get_post_meta( $quote_id, $shipping_street_address_1_field_name, true );
@@ -1286,6 +1293,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			if ( empty( $afrfq_id ) || ! is_a( $quote, 'WP_Post' ) ) return;
 
 			$po_number = trim( $_REQUEST['po_number'] );
+            $ship_to_company_name = $_REQUEST['ship_to_company_name'];
 			$shipping_street_address_1 = $_REQUEST['address_line_1'];
 			$shipping_street_address_2 = $_REQUEST['address_line_2'];
 			$shipping_city = $_REQUEST['city'];
@@ -1314,6 +1322,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			$af_fields_obj = new AF_R_F_Q_Quote_Fields();
 			$fields = (array) $af_fields_obj->afrfq_get_fields_enabled();
 			$po_number_field_name = '';
+			$ship_to_company_name_field_name = '';
 			$shipping_street_address_1_field_name = '';
 			$shipping_street_address_2_field_name = '';
 			$shipping_city_field_name = '';
@@ -1330,6 +1339,8 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 				$field_label = get_post_meta( $field_id, 'afrfq_field_label', true );
 				if ( $field_label === 'PO Number' ) {
 					$po_number_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
+				} else if ( $field_label === 'Ship to Company Name' ) {
+					$ship_to_company_name_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
 				} else if ( $field_label === 'Address line 1' ) {
 					$shipping_street_address_1_field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
 				} else if ( $field_label === 'Address line 2' ) {
@@ -1357,6 +1368,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
             $fields_to_update = [
                 $po_number_field_name => $po_number,
+                $ship_to_company_name_field_name => $ship_to_company_name,
                 $shipping_street_address_1_field_name => $shipping_street_address_1,
                 $shipping_street_address_2_field_name => $shipping_street_address_2,
                 $shipping_city_field_name => $shipping_city,
