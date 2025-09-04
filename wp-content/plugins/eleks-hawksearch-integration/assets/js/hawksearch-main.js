@@ -36,25 +36,14 @@
     var productBrandLower = (productBrand || '').toLowerCase();
     var isBridgeportProduct = productBrandLower === 'bridgeport';
 
-    var firstVisibleInput = null;
     popup.querySelectorAll('.afrfq-quote-types-select label').forEach(function(label) {
         var isBridgeportOnly = label.getAttribute('data-bridgeport-only') === 'true';
-        var input = label.querySelector('input[type="radio"]');
         if (isBridgeportOnly && !isBridgeportProduct) {
             label.style.display = 'none';
-            if (input) {
-                input.checked = false; 
-            }
         } else {
             label.style.display = ''; 
-            if (input && !firstVisibleInput) {
-                firstVisibleInput = input;
-            }
         }
     });
-    if (firstVisibleInput) {
-        firstVisibleInput.checked = true;
-    }
 
     popup.classList.add('active');
   }
@@ -96,11 +85,11 @@
   document.addEventListener('click', function (e) {
     var path = getEventPath(e);
     var btn = path.find(n => n && n.matches && n.matches('.search-results-list__item .button') && n.getAttribute('data-product_id'));
-    
+    const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
     if (!btn || (!btn.classList.contains('afrfqbt') && !btn.classList.contains('plp-select-quote-type-button'))) {
       return;
     }
-
+     selected_quote_type_not_selected_msg.style.display = 'none';
     e.preventDefault();
     e.stopImmediatePropagation();
     
@@ -146,11 +135,11 @@
   document.addEventListener('click', function (e) {
     var path = getEventPath(e);
     var submitBtn = path.find(n => n && n.matches && n.matches('#plp-popup .afrfqbt.button'));
+    const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
     if (!submitBtn) return;
-
+    selected_quote_type_not_selected_msg.style.display = 'none';
     e.preventDefault();
     e.stopImmediatePropagation();
-
     var $btn = $(submitBtn).addClass('loading');
     var productId = $btn.attr('data-product_id');
     var quantity  = $btn.attr('data-quantity') || 1;
@@ -163,8 +152,9 @@
     }
 
     var selectedInput = document.querySelector('#afrfq-popup-form input[name="afrfq_field_quote_types"]:checked');
+   
     if (!selectedInput) {
-        alert('Please select a quote type.');
+        selected_quote_type_not_selected_msg.style.display = 'block';
         $btn.removeClass('loading');
         return;
     }

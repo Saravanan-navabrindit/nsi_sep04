@@ -56,6 +56,9 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
                 </div>
             <?php endforeach; ?>
         </div>
+        <div>
+            <p class="quote-type-not-selected" style="display:none; color:red;">Please select a quote type!</p>
+        </div>
         <a href="javascript:void(0);" id="submit-quote-selection" class="button alt">Submit</a>
     </div>
     <div class="type-already-selected-warning-popup" id="type_already_selected_popup">
@@ -88,6 +91,7 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
             const closeQuickViewBtn = document.querySelector('#myaccount-popup .popup-close-button');
             const closeAlreadySelectedBtn = document.querySelector('#type_already_selected_popup #type-already-selected-close');
             const submitButton = document.getElementById('submit-quote-selection');
+            const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
 
             if (popupTrigger) {
                 popupTrigger.addEventListener('click', function (e) {
@@ -119,7 +123,7 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
                 submitButton.addEventListener('click', function () {
                     const selectedRadio = document.querySelector('input[name="afrfq_field_quote_types"]:checked');
                     if (!selectedRadio) {
-                        alert('Please select a quote type.');
+                        selected_quote_type_not_selected_msg.style.display = 'block';
                         return;
                     }
                     const selectedValue = selectedRadio.value;
