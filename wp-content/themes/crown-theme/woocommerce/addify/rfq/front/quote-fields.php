@@ -54,7 +54,7 @@ $cache_data       = wc()->session->get('quote_fields_data' );
         $afrfq_field_enable      = get_post_meta( $field_id, 'afrfq_field_enable', true );
         $afrfq_field_terms       = get_post_meta( $field_id, 'afrfq_field_terms', true );
 
-        if ( $afrfq_field_label == 'Customer Shipping Account Number' || $afrfq_field_label == 'Shipping options' ) {
+        if ( $afrfq_field_label == 'Customer Shipping Account Number' || $afrfq_field_label == 'Shipping options' || $afrfq_field_label == 'Ship to Company Name' ) {
             continue;
         }
 
