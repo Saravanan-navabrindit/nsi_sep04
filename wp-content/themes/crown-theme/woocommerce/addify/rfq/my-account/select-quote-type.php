@@ -112,6 +112,7 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
                                     document.querySelector('#type_already_selected_popup')?.classList.add('active');
                         }
                         else {
+                            selected_quote_type_not_selected_msg.style.display = 'none';
                             popup.style.display = 'block';
                         }
                     });

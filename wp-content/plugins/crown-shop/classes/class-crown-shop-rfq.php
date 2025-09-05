@@ -1111,16 +1111,15 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 				$shipping_zip = get_post_meta( $quote_id, $shipping_zip_field_name, true );
 				update_post_meta( $order_id, '_shipping_postcode', $shipping_zip );
 			}
-
-            if (!empty($customer_field_name)) {
+            if(isset($ship_to_company_name) && !empty($ship_to_company_name)){
+                $customer = $ship_to_company_name;
+            }else {
                 $customer = get_post_meta($quote_id, $customer_field_name, true);
-                update_post_meta($order_id, '_shipping_first_name', '');
-				update_post_meta($order_id, '_shipping_last_name', '');
-				update_post_meta($order_id, '_shipping_company', $customer);
             }
-
+            update_post_meta($order_id, '_shipping_company', $customer);
+            update_post_meta($order_id, '_shipping_first_name', '');
+			update_post_meta($order_id, '_shipping_last_name', '');
 			if ( $order ) {
-
 				// Set to 'on hold' so that to enable NS auto sync.
 				$order->set_status( 'on-hold' );
 				$order_id = $order->save();
