@@ -13,6 +13,7 @@ define('HAWKSEARCH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 require_once HAWKSEARCH_PLUGIN_DIR . 'inc/class-hawksearch-base-api.php';
 require_once HAWKSEARCH_PLUGIN_DIR . 'inc/class-hawksearch-indexing-api.php';
+require_once HAWKSEARCH_PLUGIN_DIR . 'inc/class-hawksearch-hierarchy-api.php';
 
 class HawkSearch {
 
@@ -38,6 +39,7 @@ class HawkSearch {
 	 * @var Hawksearch_Products_Background_Indexing
 	 */
 	protected static $hawksearch_products_background_indexing = null;
+    protected static ?Hawksearch_hierarchy_API $hierarchy_api = null;
 
 	public static function init() {
 		if( self::$init ) return;
@@ -126,6 +128,54 @@ class HawkSearch {
 				self::$hawksearch_products_background_indexing->cancel_process();
 				WP_CLI::log( 'Successfully removed hawksearch indexing batches.' );
             } );
+
+            /**
+             * WP_CLI hawksearch refresh hierarchy - rebuilds hierarchy data on current index
+             *
+             * Usage:
+             * wp hawksearch refresh hierarchy
+             */
+            WP_CLI::add_command( 'hawksearch refresh hierarchy', function( $args, $assoc_args ) {
+                $current_index = self::$indexing_api->get_current_index();
+                self::$hierarchy_api->delete_hierarchy( $current_index );
+                self::$hierarchy_api->upsert_hierarchy_data( $current_index );
+                self::$hierarchy_api->rebuild_hierarchy( $current_index );
+                self::$indexing_api->rebuild_all( $current_index );
+                WP_CLI::log( 'Successfully refreshed hierarchy data.' );
+            } );
+
+            /**
+             * WP_CLI hawksearch add hierarchy - populates hierarchy data on current index
+             *
+             * Usage:
+             * wp hawksearch add hierarchy
+             */
+            WP_CLI::add_command( 'hawksearch add hierarchy', function( $args, $assoc_args ) {
+                $current_index = self::$indexing_api->get_current_index();
+                self::$hierarchy_api->upsert_hierarchy_data( $current_index );
+                self::$hierarchy_api->rebuild_hierarchy( $current_index );
+                self::$indexing_api->rebuild_all( $current_index );
+                WP_CLI::log( 'Successfully populated hierarchy data.' );
+            } );
+
+            /**
+             * WP_CLI hawksearch delete indexes - removes all existing indexes on HawkSearch
+             *
+             * Usage:
+             * wp hawksearch delete indexes
+             */
+            WP_CLI::add_command( 'hawksearch delete indexes', function( $args, $assoc_args ) {
+                $indexes = self::$indexing_api->get_all_indexes();
+                if ( $indexes ) {
+                    foreach ( $indexes as $index ) {
+                        self::$indexing_api->delete_index( $index );
+                    }
+
+                    WP_CLI::log( 'Indexes removed' );
+                } else {
+                    WP_CLI::log( 'Indexes not found' );
+                }
+            } );
 		}
 	}
 
@@ -160,6 +210,8 @@ class HawkSearch {
 			}
 
 			$index_name = self::$indexing_api->create_index();
+            self::$hierarchy_api->upsert_hierarchy_data( $index_name );
+            self::$hierarchy_api->rebuild_hierarchy( $index_name );
 			WP_CLI::log( 'New index created: ' . $index_name );
 		} else {
 			$index_name = $current_index;
@@ -203,6 +255,7 @@ class HawkSearch {
 	public static function hawksearch_init() {
 		self::$base_api = new Hawksearch_base_API();
 		self::$indexing_api = new Hawksearch_indexing_API();
+        self::$hierarchy_api = new Hawksearch_hierarchy_API( self::$indexing_api );
 	}
 }
 
