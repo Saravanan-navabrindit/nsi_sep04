@@ -89,7 +89,9 @@
     if (!btn || (!btn.classList.contains('afrfqbt') && !btn.classList.contains('plp-select-quote-type-button'))) {
       return;
     }
-     selected_quote_type_not_selected_msg.style.display = 'none';
+    if (selected_quote_type_not_selected_msg) {
+        selected_quote_type_not_selected_msg.style.display = 'none';
+    }
     e.preventDefault();
     e.stopImmediatePropagation();
     
@@ -137,7 +139,9 @@
     var submitBtn = path.find(n => n && n.matches && n.matches('#plp-popup .afrfqbt.button'));
     const selected_quote_type_not_selected_msg = document.querySelector('.quote-type-not-selected');
     if (!submitBtn) return;
-    selected_quote_type_not_selected_msg.style.display = 'none';
+    if (selected_quote_type_not_selected_msg) {
+        selected_quote_type_not_selected_msg.style.display = 'none';
+    }
     e.preventDefault();
     e.stopImmediatePropagation();
     var $btn = $(submitBtn).addClass('loading');
