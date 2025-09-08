@@ -236,7 +236,7 @@ if ( ! function_exists( 'ct_app_links' ) ) {
 
 if ( ! function_exists( 'ct_nav_mega_menu_render' ) ) {
 	function ct_nav_mega_menu_render( $menu, $args = array() ) {
-
+        $do_replace_category_pages_with_hawksearch = do_replace_category_pages_with_hawksearch();
 		$args = array_merge( array(
 			'title' => '',
 			'children' => array(),
@@ -292,7 +292,14 @@ if ( ! function_exists( 'ct_nav_mega_menu_render' ) ) {
                                             $i = 0;
                                             foreach ( $menu as $title => $menu_item ) { ?>
 												<li class="menu-item <?php echo $i == 0 ? 'active' : ''; ?>" data-menu="<?php echo $i; ?>">
-													<a <?php echo ! empty( $menu_item['url'] ) ? 'href="' . $menu_item['url'] . '"' : ''; ?>><?php echo $title; ?></a>
+                                                    <?php
+                                                    if ( $do_replace_category_pages_with_hawksearch ) {
+                                                        $menu_url = 'href="' . get_site_url() . '/search-results?category=' . $menu_item['id'] . '"';
+                                                    } else {
+                                                        $menu_url = ! empty( $menu_item['url'] ) ? 'href="' . $menu_item['url'] . '"' : '';
+                                                    }
+                                                    ?>
+													<a <?php echo $menu_url; ?>><?php echo $title; ?></a>
 												</li>
 											<?php $i++; } ?>
 										</ul>
@@ -308,12 +315,26 @@ if ( ! function_exists( 'ct_nav_mega_menu_render' ) ) {
 											<ul class="sub-menu menu-level-2 parent-menu-<?php echo $i; ?> <?php echo $i == 0 ? 'active' : ''; ?>" data-parent-menu="<?php echo $i; ?>">
 												<?php foreach ( $menu_item['children'] as $sub_item_title => $sub_item ) { ?>
 													<li class="menu-item">
-														<a <?php echo ! empty( $sub_item['url'] ) ? 'href="' . $sub_item['url'] . '"' : ''; ?>><?php echo $sub_item_title; ?></a>
+                                                        <?php
+                                                        if ( $do_replace_category_pages_with_hawksearch ) {
+                                                            $sub_item_url = 'href="' . get_site_url() . '/search-results?category=' . $sub_item['id'] . '"';
+                                                        } else {
+                                                            $sub_item_url = ! empty( $sub_item['url'] ) ? 'href="' . $sub_item['url'] . '"' : '';
+                                                        }
+                                                        ?>
+														<a <?php echo $sub_item_url; ?>><?php echo $sub_item_title; ?></a>
 														<?php if ( empty( $sub_item['children'] ) ) continue; ?>
                                                         <ul class="sub-menu menu-level-3">
 															<?php foreach ( $sub_item['children'] as $sub_item_categorie_title => $sub_item_categorie ) { ?>
                                                                 <li class="menu-item">
-                                                                    <a <?php echo ! empty( $sub_item_categorie['url'] ) ? 'href="' . $sub_item_categorie['url'] . '"' : ''; ?>><?php echo $sub_item_categorie_title; ?></a>
+                                                                    <?php
+                                                                    if ( $do_replace_category_pages_with_hawksearch ) {
+                                                                        $sub_item_categorie_url = 'href="' . get_site_url() . '/search-results?category=' . $sub_item_categorie['id'] . '"';
+                                                                    } else {
+                                                                        $sub_item_categorie_url = ! empty( $sub_item_categorie['url'] ) ? 'href="' . $sub_item_categorie['url'] . '"' : '';
+                                                                    }
+                                                                    ?>
+                                                                    <a <?php echo $sub_item_categorie_url; ?>><?php echo $sub_item_categorie_title; ?></a>
                                                                 </li>
 															<?php } ?>
                                                         </ul>

@@ -259,3 +259,12 @@ function crown_get_zone_shipping_methods( $zone_id ) {
 
     return $shipping_methods;
 }
+
+function do_replace_category_pages_with_hawksearch() {
+    $is_replace_categories = defined( 'HAWKSEARCH_ENABLE_CATEGORY_HIERARCHY_LINKS' ) ? HAWKSEARCH_ENABLE_CATEGORY_HIERARCHY_LINKS : false;
+    return $is_replace_categories;
+
+    //checkbox in wp-admin if needed - import acf file first
+//    $is_replace_categories = get_field( 'nsi_replace_category_pages_with_hawksearch', 'option' );
+//    return isset( $is_replace_categories[0] ) && $is_replace_categories[0] === 'yes';
+}
