@@ -12,8 +12,8 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
     $admin_id = get_original_admin_id();
     $admin_user   = $admin_id ? get_userdata($admin_id) : null;
     if ( in_array( $current_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true ) || ( is_switched_customer() && $admin_user && in_array( $admin_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true )) ) {
-        $current_user_email = $current_user->user_email;
-        $admin_user_email = $admin_user ? $admin_user->user_email : '';
+        $current_user_email = strtolower( $current_user->user_email );
+        $admin_user_email = $admin_user ? strtolower( $admin_user->user_email ) : '';
         $dsm_allowed_brands_option = get_option( 'dsm_allowed_brands' );
         $domains = $dsm_allowed_brands_option['data']['dsm-domain'] ?? array();
         $brands = $dsm_allowed_brands_option['data']['dsm-brands'] ?? array();
@@ -21,8 +21,12 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
         if ( ! empty( $domains ) && ! empty( $brands ) ) {
             foreach ( $domains as $index => $domain ) {
                 $lowercase_domain = strtolower( $domain );
-
-                if ( str_contains( $current_user_email, $lowercase_domain) || ( $admin_user_email && str_contains($admin_user_email, $lowercase_domain)) ) {
+                if ( is_switched_customer() ) {
+                    $email_to_check = $admin_user_email;
+                } else {
+                    $email_to_check = $current_user_email;
+                }
+                if ( $email_to_check && str_contains( $email_to_check, $lowercase_domain ) ) {
                     $available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
 
                     if ( in_array( 'bridgeport', array_map( 'strtolower', $available_brands ), true ) ) {
