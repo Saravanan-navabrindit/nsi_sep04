@@ -1035,8 +1035,16 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
 
 		public static function quote_converted_to_order( $order_id, $quote_id ) {
-
-			$order = $order_id ? wc_get_order( $order_id ) : null;
+         
+            $af_checkout = new AF_C_F_Checkout();
+			global $post;
+            $finalised_checkout_fields = [];
+			$checkout_fields = $af_checkout->get_checkout_fields();
+            foreach($checkout_fields as $field_id){
+                $finalised_checkout_fields[$field_id] = get_the_title($field_id);
+            }
+            $logger->info("finalised_checkout_fields: " . print_r($finalised_checkout_fields, true) );
+       		$order = $order_id ? wc_get_order( $order_id ) : null;
 
 			$af_fields_obj = new AF_R_F_Q_Quote_Fields();
 			$fields = (array) $af_fields_obj->afrfq_get_fields_enabled();
@@ -1090,7 +1098,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			if ( ! empty( $ship_to_company_name_field_name ) ) {
 				$ship_to_company_name = get_post_meta( $quote_id, $ship_to_company_name_field_name, true );
 				update_post_meta( $order_id, '_ship_to_company_name', $ship_to_company_name );
-			}
+        	}
 			if ( ! empty( $shipping_street_address_1_field_name ) ) {
 				$shipping_street_address_1 = get_post_meta( $quote_id, $shipping_street_address_1_field_name, true );
 				update_post_meta( $order_id, '_shipping_address_1', $shipping_street_address_1 );
@@ -1119,6 +1127,18 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             update_post_meta($order_id, '_shipping_company', $customer);
             update_post_meta($order_id, '_shipping_first_name', '');
 			update_post_meta($order_id, '_shipping_last_name', '');
+            foreach($fields as $key => $field){
+                $field_id = $field->ID;
+				$field_label = get_post_meta( $field_id, 'afrfq_field_label', true );
+                if(in_array($field_label, $finalised_checkout_fields)){
+                    $custom_field_key = array_search($field_label, $finalised_checkout_fields);
+                    $field_name = get_post_meta( $field->ID, 'afrfq_field_name', true );
+                    $field_value = get_post_meta( $quote_id, $field_name, true );
+                    if($field_value){
+                        update_post_meta($order_id, 'af_c_f_' . $custom_field_key, $field_value);
+                    }
+                }
+            }
 			if ( $order ) {
 				// Set to 'on hold' so that to enable NS auto sync.
 				$order->set_status( 'on-hold' );
