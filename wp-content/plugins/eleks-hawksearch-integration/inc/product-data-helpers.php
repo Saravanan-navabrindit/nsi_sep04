@@ -6,6 +6,7 @@ function get_product_indexing_data($product_id) {
 	$image_src = get_product_image_src($product_id);
 	$brand = wp_get_post_terms( $product_id, 'product_brand', array( 'number' => 1, 'fields' => 'names' ) );
 	$primary_category = get_product_primary_category($product_id);
+    $categories = empty($primary_category) ? array() : get_product_categories( $primary_category );
 	$min_qty = intval( get_post_meta( $product->get_id(), 'min_quantity', true ) );
 	$min_qty = $min_qty < 1 ? 1 : $min_qty;
 	$product_data = array(
@@ -16,12 +17,18 @@ function get_product_indexing_data($product_id) {
 		'image' => array( $image_src ),
 		'url' => array( get_permalink($product_id) ),
 		'price' => array( $product->get_price() ),
-		'category' => array( $primary_category ),
+		'category' => $categories,
 		'brand' => $brand,
 		'min_quantity' => array( $min_qty ),
 	);
 	$product_data = array_merge($product_data, get_product_meta_data($product_id));
 	return (object) $product_data;
+}
+
+function get_product_categories( $primary_category ) {
+    $parent_categories = get_ancestors( $primary_category, 'product_cat' );
+    $parent_categories[] = $primary_category;
+    return $parent_categories;
 }
 
 function get_product_meta_data($product_id) {
@@ -61,19 +68,19 @@ function get_product_image_src($product_id) {
 
 function get_product_primary_category ($product_id) {
 	$primary_category = '';
-	$primary_category_id = get_post_meta( get_the_ID(), '_primary_term_product_cat', true );
+	$primary_category_id = get_post_meta( $product_id, '_primary_term_product_cat', true );
 	$categories = wp_get_post_terms( $product_id, 'product_cat' );
 
 	if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
 		if ( ! empty( $primary_category_id ) ) {
 			foreach ( $categories as $category ) {
 				if ( $category->term_id == $primary_category_id ) {
-					$primary_category = $category->name;
+					$primary_category = $category->term_id;
 					break;
 				}
 			}
 		}
-		if ( ! $primary_category ) $primary_category = $categories[0]->name;
+		if ( ! $primary_category ) $primary_category = $categories[0]->term_id;
 	}
 	return $primary_category;
 }

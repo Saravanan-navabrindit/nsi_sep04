@@ -334,13 +334,21 @@ if(defined('CROWN_FRAMEWORK_VERSION') && !class_exists('CrownBreadcrumbs')) {
 			} else if(isset($item['pt_archive']) && !empty($item['pt_archive'])) {
 
 				$postType = get_post_type_object($item['pt_archive']);
-				$url = get_post_type_archive_link($postType->name);
+                if ( $postType->name === 'product' && do_replace_category_pages_with_hawksearch() ) {
+                    $url = get_site_url() . '/search-results';
+                } else {
+                    $url = get_post_type_archive_link($postType->name);
+                }
 				$text = $postType->labels->name;
 
 			} else if(isset($item['tax']) && !empty($item['tax']) && isset($item['term']) && !empty($item['term'])) {
 
 				$term = get_term($item['term'], $item['tax']);
-				$url = get_term_link($term->term_id, $term->taxonomy);
+                if ( $term->taxonomy === 'product_cat' && do_replace_category_pages_with_hawksearch() ) {
+                    $url = get_site_url() . '/search-results?category=' . $term->term_id;
+                } else {
+                    $url = get_term_link($term->term_id, $term->taxonomy);
+                }
 				$text = $term->name;
 				$titleOverride = get_term_meta($term->term_id, '_crown_breadcrumb_title', true);
 				if(!empty($titleOverride)) $text = $titleOverride;

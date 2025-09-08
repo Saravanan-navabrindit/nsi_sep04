@@ -1028,8 +1028,6 @@ class MainFmeaddonsClass {
 		}
 		if ($found) {
 			global $woocommerce;
-			$array_for_log_child=array();
-			$array_for_log=get_option('all_logs');
 			$current_id=get_current_user_ID();
 			if (isset($_REQUEST['id'])) {
 				$id=sanitize_text_field($_REQUEST['id']);
@@ -1050,22 +1048,8 @@ class MainFmeaddonsClass {
 				wp_set_current_user ( $id );
 				wp_set_auth_cookie  ( $id );
 
-                Eleks_Carts_Management::restore_shopping_cart_from_db($id);
-
 				$useralll = get_userdata($id);
-				$nammee=$useralll->data->display_name;
-				$emaill=$useralll->data->user_email;
 
-
-				$array_for_log_child['id']=$id;
-
-				$array_for_log_child['time']=gmdate('M d, Y h:i:s A'); 
-				$array_for_log_child['customer']=$nammee . ' < ' . $emaill . ' > ';
-                $array_for_log_child['admin_id']=$current_id;
-
-				$array_for_log[]=$array_for_log_child;
-
-				update_option('all_logs', $array_for_log, false);
                 do_action( 'fme_switch_to_log_the_action', $user_meta, $useralll );
 
 				$redirect_to = user_admin_url();
@@ -1075,8 +1059,10 @@ class MainFmeaddonsClass {
 				} else {
 					echo esc_attr($d);
 				}
-				$admin=array();
-				array_push ($admin, $current_id);
+
+                // Need to have cookie set in current request before cart and quote restoring.
+                $_COOKIE['sac_admin_id'] = $current_id;
+                Eleks_Carts_Management::restore_shopping_cart_from_db($id);
                 session_start();
 				$_SESSION['admin']='adminisloggedin';
                 Eleks_Carts_Management::restore_quotes_cart_from_db($id);

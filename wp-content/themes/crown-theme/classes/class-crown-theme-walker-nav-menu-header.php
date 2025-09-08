@@ -161,6 +161,7 @@ if ( ! class_exists( 'Crown_Theme_Walker_Nav_Menu_Header' ) && class_exists( 'Wa
 						$submenu[$category->name] = array (
 							'children' => $this->get_product_categories_submenu( $max_depth, $depth +1, $category->term_id ),
 							'url'     => get_term_link($category),
+                            'id' => $category->term_id,
 						);
 					}
 				}
