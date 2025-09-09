@@ -150,20 +150,6 @@ function get_current_user_contextual_quote_type_key() {
     return $base_key;
 }
 
-function get_current_user_contextual_quote_addify_key() {
-    $base_key = '_addify_quote-cart';
-    $user_id = get_current_user_id();
-    // Check if the current user is a switched-in admin/manager
-    if ( function_exists('is_switched_customer') && is_switched_customer() ) {
-        $admin_id = function_exists('get_original_admin_id') ? get_original_admin_id() : 0;
-        if ( $admin_id && ($user_id !== $admin_id)) {
-            return $base_key . '_' . $user_id . '_' . $admin_id;
-        }
-    }
-
-    return $base_key;
-}
-
 /**
  * Gets the selected quote type for the current user context.
  * It correctly handles normal customers and switched admins.
