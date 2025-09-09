@@ -188,6 +188,7 @@ class AF_R_F_Q_Ajax_Controller {
 		add_action( 'wp_ajax_afrfq_remove_pricing_group_from_quote', array( $this, 'afrfq_remove_pricing_group_from_quote' ) );
 		add_action( 'wp_ajax_nopriv_afrfq_remove_pricing_group_from_quote', array( $this, 'afrfq_remove_pricing_group_from_quote' ) );
 		add_action( 'wp_ajax_afrfq_clear_pricing_groups_cart', array( $this, 'afrfq_clear_pricing_groups_cart' ) );
+		add_action( 'wp_ajax_request_page_clear_quotes_cart', array( $this, 'request_page_clear_quotes_cart' ) );
 	}
 	
 
@@ -1330,6 +1331,32 @@ class AF_R_F_Q_Ajax_Controller {
 			wp_send_json_success();
 			die();
 		}
+		/**
+		 * AJAX handler to CLEAR all pricing groups from the quote.
+		 */
+		function request_page_clear_quotes_cart() {
+			check_ajax_referer( 'request-page-clear-quotes-nonce', 'nonce' );
+			$context_key = get_current_user_contextual_quote_type_key();
+			$user_id = get_current_user_id();
+
+			if ( WC()->session->get( 'selected_quote_type' ) ) {
+				WC()->session->__unset( 'selected_quote_type' );
+			}
+
+			if ( WC()->session->get( $context_key ) ) {
+				WC()->session->__unset( $context_key );
+			}
+
+			if ( is_user_logged_in() ) {
+				delete_user_meta( get_current_user_id(), $context_key , null );
+				update_user_meta(get_current_user_id(), 'selected_quote_type', null);
+				update_user_meta(get_current_user_id(), $context_key, null );
+			}
+
+			wp_send_json_success();
+			die();
+		}
+
 
 		/**
 		 * Ajax add to quote controller.

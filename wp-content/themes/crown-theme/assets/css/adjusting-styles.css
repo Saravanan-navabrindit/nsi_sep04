@@ -308,3 +308,12 @@ span.add-to-quote-group--message {
 span.select2-container.select2-container--default.select2-container--open {
     width: auto;
 }
+button#afrfq_clear_quote__cart_btn_quote_alt {
+    border-bottom: solid 2px #f0f0f0;
+    margin-right: 5px;
+}
+@media only screen and (max-width: 767px) {
+.before-quote--holder .quote--left {
+    width: 100%;
+   }
+}
