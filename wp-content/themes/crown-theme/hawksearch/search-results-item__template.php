@@ -44,19 +44,25 @@
             $check_if_dual_shop_manager_brands_allowed   = false;
             $switched_user = Crown_Shop_Display::get_original_switched_user( $current_user->ID );
             $brand_names   = array();
-
-            if ( $is_manager || $is_switched_manager ) {
+			if ( $current_user->roles[0] == 'dual_shop_manager' ) {
                 $check_if_dual_shop_manager_brands_allowed = true;
                 $brand_names = get_dual_shop_manager_allowed_brands( $current_user );
             } elseif ( $switched_user && isset( $switched_user->roles[0] ) && $switched_user->roles[0] === 'dual_shop_manager' ) {
                 $check_if_dual_shop_manager_brands_allowed = true;
                 $brand_names = get_dual_shop_manager_allowed_brands( $switched_user );
+            } elseif ( $current_user->roles[0] == 'shop_manager' ) {
+                $check_if_shop_manager_popup = true;
+            } elseif ( $switched_user && isset( $switched_user->roles[0] ) && $switched_user->roles[0] === 'shop_manager' ) {
+                $check_if_shop_manager_popup = true;
             } else {
                 $restricted_brands_condition = add_hawksearch_restricted_brands_condition( $current_user, $check_if_sales_rep_domain_brands_restricted );
             }
 
             if ( $check_if_dual_shop_manager_brands_allowed ) {
                 $dsm_allowed_brands_condition = build_hawksearch_brands_condition( $brand_names );
+            }
+			if ( $check_if_shop_manager_popup ) {
+                $shop_manager_condition = 'true';
             }
             ?>
 
@@ -87,7 +93,7 @@
                                data-quote_title="<?php echo esc_attr( $default_quote_title ); ?>" 
                                class="afrfqbt button product_type_simple">Add to Quote</a>
                             {{/unless}}
-                        <?php } elseif ( $check_if_dual_shop_manager_brands_allowed ) {
+                        <?php } elseif ( $check_if_dual_shop_manager_brands_allowed || $check_if_shop_manager_popup ) {
                             // DSM logic with bridgeport + quote type check
                             $quote_type_already_exists = false;
                             $is_bridgeport_only = false;
@@ -107,7 +113,7 @@
                                 $is_discount_type = (get_post_meta($quote_type_id, 'quote_type_discount_rules', true) === 'yes');
                             }
                             ?>
-                            {{#if (or <?php echo $dsm_allowed_brands_condition; ?>)}}
+							{{#if (or <?php echo $dsm_allowed_brands_condition; ?> <?php echo $shop_manager_condition; ?>)}}
                                 <?php echo $add_to_cart_button; ?>
                                 <a href="javascript:void(0)"
                                 data-user_type = "general" 
@@ -173,7 +179,7 @@
                                 <?php echo $add_to_cart_button; ?>
                                 <a href="javascript:void(0)" rel="nofollow" data-product_id="{{id}}" data-quantity="1" data-price="0" data-product_sku="{{sku}}" data-brand="{{attributes.brand}}" class="afrfqbt button product_type_simple">Add to Quote</a>
                             {{/unless}}
-                        <?php } elseif ( $check_if_dual_shop_manager_brands_allowed ) {
+                        <?php } elseif ( $check_if_dual_shop_manager_brands_allowed || $check_if_shop_manager_popup ) {
                             // DSM logic with bridgeport + quote type check
                              $quote_type_already_exists = false;
                             $is_bridgeport_only = false;
@@ -193,7 +199,7 @@
                                 $is_discount_type = (get_post_meta($quote_type_id, 'quote_type_discount_rules', true) === 'yes');
                             }
                             ?>
-                            {{#if (or <?php echo $dsm_allowed_brands_condition; ?>)}}
+							{{#if (or <?php echo $dsm_allowed_brands_condition; ?> <?php echo $shop_manager_condition; ?>)}}
                                 <?php echo $add_to_cart_button; ?>
                                 <a href="javascript:void(0)"
                                 data-user_type = "general" 

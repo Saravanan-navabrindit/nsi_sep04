@@ -1742,10 +1742,21 @@ class AF_R_F_Q_Ajax_Controller {
 			$_POST      = $form_data;
 			$product_id = isset( $form_data['product_id'] ) ? intval( $form_data['product_id'] ) : '';
 			$quantity   = isset( $form_data['quantity'] ) ? intval( $form_data['quantity'] ) : 1;
+			$source	 = isset( $form_data['source'] ) ? sanitize_text_field( $form_data['source'] ) : '';
 			if ( isset( $form_data['afrfq_field_quote_types'] ) ) {
 
 				$context_key = get_current_user_contextual_quote_type_key();
+				if ($source === 'submit_plp_popup') {
+					$existing_quote_type = WC()->session->get($context_key);
+					if ( empty($existing_quote_type['id']) && is_user_logged_in() ) {
+						$existing_quote_type = get_user_meta( get_current_user_id(), $context_key, true );
+					}
 
+					if ( !empty($existing_quote_type['id']) ) {
+						wp_send_json_error(['code' => 'quote_type_exists']);
+						die();
+					}
+				}
 				global $addify_rfq;
 				if ( !is_object($addify_rfq) || !is_object($addify_rfq->quote_types_obj) ) {
 					wp_send_json_error(['code' => 'plugin_error', 'message' => 'Addify RFQ plugin not available.']);
