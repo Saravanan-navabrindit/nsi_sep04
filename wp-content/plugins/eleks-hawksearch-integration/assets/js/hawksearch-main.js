@@ -171,7 +171,8 @@
         quantity: quantity,
         price: price,
         nonce: afrfq_phpvars.nonce,
-        afrfq_field_quote_types: quoteId 
+        afrfq_field_quote_types: quoteId,
+        source: 'submit_plp_popup'
     };
 
     $.post(afrfq_phpvars.admin_url, formData, function (response) {
