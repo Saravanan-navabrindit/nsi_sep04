@@ -1043,8 +1043,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             foreach($checkout_fields as $field_id){
                 $finalised_checkout_fields[$field_id] = get_the_title($field_id);
             }
-            $logger->info("finalised_checkout_fields: " . print_r($finalised_checkout_fields, true) );
-       		$order = $order_id ? wc_get_order( $order_id ) : null;
+        	$order = $order_id ? wc_get_order( $order_id ) : null;
 
 			$af_fields_obj = new AF_R_F_Q_Quote_Fields();
 			$fields = (array) $af_fields_obj->afrfq_get_fields_enabled();
