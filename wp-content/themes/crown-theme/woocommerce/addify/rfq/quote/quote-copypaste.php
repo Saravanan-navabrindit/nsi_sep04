@@ -60,9 +60,8 @@ jQuery(document).ready(function($) {
 				if (response.success) {
 					localStorage.removeItem('selected_quote_type');
                     localStorage.setItem('open_myaccount_popup', '1');
-                window.location.href = '../my-account/';
-                    // window.location.href = '<?php echo esc_url( wc_get_page_permalink( "myaccount" ) ); ?>';
-				} else {
+                    window.location.href = '../my-account/';
+             	} else {
 					alert('Could not clear the quote. Please try again.');
 					button.prop('disabled', false).removeClass('loading');
 				}
