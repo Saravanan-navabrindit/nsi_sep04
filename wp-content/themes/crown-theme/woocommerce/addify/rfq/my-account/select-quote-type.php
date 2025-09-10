@@ -9,11 +9,42 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
     $bridge_port_brand = false;
     $selected_quote_type = get_current_user_quote_type_value();
     $current_user = wp_get_current_user();
-    $admin_id = get_original_admin_id();
-    $admin_user   = $admin_id ? get_userdata($admin_id) : null;
-    if ( in_array( $current_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true ) || ( is_switched_customer() && $admin_user && in_array( $admin_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true )) ) {
-        $current_user_email = strtolower( $current_user->user_email );
-        $admin_user_email = $admin_user ? strtolower( $admin_user->user_email ) : '';
+    $admin_id   = get_original_admin_id();
+    $admin_user = $admin_id ? get_userdata($admin_id) : null;
+
+    $brand_check_condition = false;
+    $email_to_check = null;
+    $is_shop_manager = false;
+    $is_dual_shop_manager = false;
+    if ( is_switched_customer() ) {
+        $switched_roles = (array) $current_user->roles;
+
+        if ( in_array( 'shop_manager', $switched_roles, true ) ) {
+            $is_shop_manager = true;
+            $email_to_check = strtolower( $current_user->user_email );
+        } elseif ( in_array( 'dual_shop_manager', $switched_roles, true ) ) {
+            $is_dual_shop_manager = true;
+            $email_to_check = strtolower( $current_user->user_email );
+        } elseif ( $admin_user ) {
+            if ( in_array( 'shop_manager', (array) $admin_user->roles, true ) ) {
+                $is_shop_manager = true;
+                $email_to_check = strtolower( $admin_user->user_email );
+            } elseif ( in_array( 'dual_shop_manager', (array) $admin_user->roles, true ) ) {
+                $is_dual_shop_manager = true;
+                $email_to_check = strtolower( $admin_user->user_email );
+            }
+        }
+    } else {
+        if ( in_array( 'shop_manager', (array) $current_user->roles, true ) ) {
+            $is_shop_manager = true;
+            $email_to_check = strtolower( $current_user->user_email );
+        } elseif ( in_array( 'dual_shop_manager', (array) $current_user->roles, true ) ) {
+            $is_dual_shop_manager = true;
+            $email_to_check = strtolower( $current_user->user_email );
+        }
+    }
+
+    if ( $is_dual_shop_manager ) {
         $dsm_allowed_brands_option = get_option( 'dsm_allowed_brands' );
         $domains = $dsm_allowed_brands_option['data']['dsm-domain'] ?? array();
         $brands = $dsm_allowed_brands_option['data']['dsm-brands'] ?? array();
@@ -21,11 +52,6 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
         if ( ! empty( $domains ) && ! empty( $brands ) ) {
             foreach ( $domains as $index => $domain ) {
                 $lowercase_domain = strtolower( $domain );
-                if ( is_switched_customer() ) {
-                    $email_to_check = $admin_user_email;
-                } else {
-                    $email_to_check = $current_user_email;
-                }
                 if ( $email_to_check && str_contains( $email_to_check, $lowercase_domain ) ) {
                     $available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
 
@@ -48,7 +74,7 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
                 $quote_id = intval( $quote_type->ID );
                 $quote_title = isset($quote_type->post_title) ? esc_html( $quote_type->post_title ) : esc_html( get_the_title( $quote_id ) );
                 $quote_type_bridgeport_only = get_post_meta( $quote_id, 'quote_type_bridgeport_brand', true );
-                if ( $quote_type_bridgeport_only === 'yes' && ! $bridge_port_brand ) {
+                if ( $is_dual_shop_manager && $quote_type_bridgeport_only === 'yes' && ! $bridge_port_brand ) {
                     continue;
                 }
             ?>
