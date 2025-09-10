@@ -1,6 +1,7 @@
 <?php
 
 use Crown\Post\Taxonomy;
+use CrownShop\Enums\LogWooErrorType;
 
 if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 	class Crown_Shop_Display {
@@ -1282,19 +1283,28 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 
 		public static function filter_woocommerce_product_get_image( $image, $product, $size, $attr, $placeholder, $image_orig ) {
 			$post_id = $product->get_id();
-			$image_srcs = get_post_meta( $post_id, '__product_image_srcs', false );
-			if ( is_array( $image_srcs ) && ! empty( $image_srcs ) ) {
-				$image_src = self::convert_amplifi_cdn_src( $image_srcs[0] );
-				if ( in_array( $size, array( 'thumbnail' ) ) ) {
-					$image_src .= '_small.jpg';
-				} else if ( in_array( $size, array( 'medium' ) ) ) {
-					$image_src .= '_small.jpg';
-				} else if ( in_array( $size, array( 'large' ) ) ) {
-					$image_src .= '_medium.jpg';
-				}
-				return sprintf('<img src="'. esc_attr( $image_src ) . '" alt="%s" class="%s" />', esc_attr__('Product Image', 'woocommerce'),
-                    esc_attr('wooswipe-product-image single-product-main-image'));
-			}
+            try {
+                $image_srcs = get_post_meta( $post_id, '__product_image_srcs', false );
+                if ( is_array( $image_srcs ) && ! empty( $image_srcs ) ) {
+                    $image_src = self::convert_amplifi_cdn_src( $image_srcs[0] );
+                    if ( in_array( $size, array( 'thumbnail' ) ) ) {
+                        $image_src .= '_small.jpg';
+                    } else if ( in_array( $size, array( 'medium' ) ) ) {
+                        $image_src .= '_small.jpg';
+                    } else if ( in_array( $size, array( 'large' ) ) ) {
+                        $image_src .= '_medium.jpg';
+                    }
+                    return sprintf('<img src="'. esc_attr( $image_src ) . '" alt="%s" class="%s" />', esc_attr__('Product Image', 'woocommerce'),
+                            esc_attr('wooswipe-product-image single-product-main-image'));
+                }
+            }
+            catch ( \Throwable $e ) {
+                if ( class_exists( 'WC_Logger' ) ) {
+                    $logger = wc_get_logger();
+                    $logger->error( 'Handled FATAL in filter_woocommerce_product_get_image: '
+                            . $e->getMessage() . ' | Affected product ID: ' . $post_id, array( 'source' => LogWooErrorType::HANDLED_FATAL->value ) );
+                }
+            }
 			return $image;
 		}
 
