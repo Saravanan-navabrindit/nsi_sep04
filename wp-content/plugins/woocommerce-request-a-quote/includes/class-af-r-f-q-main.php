@@ -622,31 +622,69 @@ if ( ! class_exists( 'AF_R_F_Q_Main' ) ) {
 					$current_user = wp_get_current_user();
 					$admin_id = get_original_admin_id();
 					$admin_user = $admin_id ? get_userdata($admin_id) : null;
-					$is_manager = in_array( $current_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true );
-					$is_switched_manager = is_switched_customer() && $admin_user && in_array( $admin_user->roles[0], [ 'shop_manager', 'dual_shop_manager' ], true );
+    				$brand_check_condition = false;
+					$triggering_role = null;
+					$email_to_check = '';
+
+					if ( is_switched_customer() ) {
+						$switched_roles = (array) $current_user->roles;
+						if ( in_array( 'dual_shop_manager', $switched_roles ) ) {
+							$brand_check_condition = true;
+							$triggering_role = 'dual_shop_manager';
+							$email_to_check = strtolower( $current_user->user_email );
+						} elseif ( in_array( 'shop_manager', $switched_roles ) ) {
+							$brand_check_condition = true;
+							$triggering_role = 'shop_manager';
+						} elseif ( $admin_user ) {
+							$admin_roles = (array) $admin_user->roles;
+							if ( in_array( 'dual_shop_manager', $admin_roles ) ) {
+								$brand_check_condition = true;
+								$triggering_role = 'dual_shop_manager';
+								$email_to_check = strtolower( $admin_user->user_email );
+							} elseif ( in_array( 'shop_manager', $admin_roles ) ) {
+								$brand_check_condition = true;
+								$triggering_role = 'shop_manager';
+							}
+						}
+					} else {
+						$user_roles = (array) $current_user->roles;
+						if ( in_array( 'dual_shop_manager', $user_roles ) ) {
+							$brand_check_condition = true;
+							$triggering_role = 'dual_shop_manager';
+							$email_to_check = strtolower( $current_user->user_email );
+						} elseif ( in_array( 'shop_manager', $user_roles ) ) {
+							$brand_check_condition = true;
+							$triggering_role = 'shop_manager';
+						}
+					}
 					$context_key = get_current_user_contextual_quote_type_key();
-					if ( $is_manager || $is_switched_manager ) {
-						$current_user_email = $current_user->user_email;
-						$admin_user_email = $admin_user->user_email;
-						$dsm_allowed_brands_option = get_option( 'dsm_allowed_brands' );
-						$domains = $dsm_allowed_brands_option['data']['dsm-domain'] ?? array();
-						$brands = $dsm_allowed_brands_option['data']['dsm-brands'] ?? array();
+					if ( $brand_check_condition ) {
+						$product_brand = $product->get_meta('product_brand');
+						if ( strtolower( $product_brand ) === 'bridgeport' ) {
+							$bridge_port_product = true;
+						}
+						if ( 'dual_shop_manager' === $triggering_role ) {
+							$dsm_allowed_brands_option = get_option( 'dsm_allowed_brands' );
+							$domains = $dsm_allowed_brands_option['data']['dsm-domain'] ?? array();
+							$brands = $dsm_allowed_brands_option['data']['dsm-brands'] ?? array();
 
-						if ( ! empty( $domains ) && ! empty( $brands ) ) {
-							foreach ( $domains as $index => $domain ) {
-								$lowercase_domain = strtolower( $domain );
+							if ( ! empty( $domains ) && ! empty( $brands ) && ! empty( $email_to_check ) ) {
+								foreach ( $domains as $index => $domain ) {
+									$lowercase_domain = strtolower( $domain );
 
-								if ( str_contains( $current_user_email, $lowercase_domain ) || str_contains( $admin_user_email, $lowercase_domain ) ) {
-									$available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
-									$product_brand = $product->get_meta('product_brand');
+									if ( str_contains( $email_to_check, $lowercase_domain ) ) {
+										$available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
 
-									if ( in_array( 'bridgeport', array_map( 'strtolower', $available_brands ), true ) ) {
-										$bridge_port_brand = true;
-									}
-									if ( strtolower( $product_brand ) === 'bridgeport' ) {
-										$bridge_port_product = true;
+										if ( in_array( 'bridgeport', array_map( 'strtolower', $available_brands ), true ) ) {
+											$bridge_port_brand = true;
+										}
+										break;
 									}
 								}
+							}
+						} elseif ( 'shop_manager' === $triggering_role ) {
+							if ( $bridge_port_product ) {
+								$bridge_port_brand = true;
 							}
 						}
 
