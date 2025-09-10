@@ -82,7 +82,7 @@ if(!empty(get_user_meta(get_current_user_id(), 'quote_pricing_groups'))) {
             </button>
 
             <button type="button" id="afrfq_import_quote_pricing_btn" class="button afrfq_import_quote_pricing_btn afrfq_import_quote_profile_btn" name="import_quote" value="Import Product List">
-                <?php esc_html_e( 'Import Product Group List', 'addify_rfq' ); ?>
+                <?php esc_html_e( 'Import Pricing Group List', 'addify_rfq' ); ?>
             </button>
 
             <span class="update-quote-message" style="display: block; margin-top: 10px;"></span>

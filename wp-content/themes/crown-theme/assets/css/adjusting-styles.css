@@ -316,4 +316,42 @@ button#afrfq_clear_quote__cart_btn_quote_alt {
 .before-quote--holder .quote--left {
     width: 100%;
    }
+   .tooltip-text {
+  bottom: -180% !important;
+   right: 80% !important;
+   transform: translateX(-80%) !important;
+    font-size: 11px !important;
+   }
+}
+span.tooltip-icon {
+    position: absolute;
+    padding-left: 5px;
+    max-width: 28px;
+    cursor: pointer;
+}
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 240px;
+    color: #000;
+    background: #fff;
+    text-align: left;
+    padding: 4px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 10;
+    bottom: 0%;
+    left: 110%;
+    transform: translateX(0%);
+    transition: opacity 0.3s ease;
+    font-size: 13px;
+    line-height: 1.2;
+    pointer-events: none;
+    border: 1px solid #000;
+    font-weight: 400;
+}
+.tooltip-icon:hover .tooltip-text, .tooltip-icon.active .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
 }
