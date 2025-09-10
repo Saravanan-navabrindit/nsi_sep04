@@ -925,3 +925,19 @@ jQuery(document).ready(function ($) {
         }
     }).trigger('change');
 });
+
+// tooltip
+document.addEventListener("DOMContentLoaded", function () {
+    const tooltips = document.querySelectorAll(".tooltip-icon");
+
+    tooltips.forEach(icon => {
+        icon.addEventListener("click", function (e) {
+            e.stopPropagation();
+            tooltips.forEach(i => i.classList.remove("active"));
+            this.classList.toggle("active");
+        });
+    });
+    document.addEventListener("click", function () {
+        tooltips.forEach(i => i.classList.remove("active"));
+    });
+});

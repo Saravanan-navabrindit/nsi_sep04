@@ -33,7 +33,7 @@ SKU QUANTITY"
                 name="request_page_clear_quotes_cart"
                 class="button"
                 value="Clear Quote Cart">
-            <?php esc_html_e( 'Clear Cart', 'crown-theme' ); ?>
+            <?php esc_html_e( 'Clear Quote', 'crown-theme' ); ?>
         </button>
     <?php endif; ?>
     <button class="btn btn-primary" id="create-new-quote"><?php
