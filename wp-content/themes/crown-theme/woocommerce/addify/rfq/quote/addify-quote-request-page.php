@@ -96,7 +96,7 @@ if ( ! empty( WC()->session->get( 'quotes' ) ) || !empty($has_discount_rules) ) 
 	$tax_display      = 'yes' === get_option( 'afrfq_enable_tax' ) ? true : false;
 
 	?>
-	<h4>Quote Type: <span id="selected-quote-type-title"><?php echo $quote_title; ?></span></h4>
+	<h4>Quote Type: <span id="selected-quote-type-title"><?php echo $quote_title; ?></span><span class="tooltip-icon"><img src="../wp-content/uploads/2025/09/information.webp" /><span class="tooltip-text">The selected quote type has been saved. To reset, please use the Clear Quote/Cart button.</span></span></h4>
 	<div class="woocommerce">
 		<?php woocommerce_output_all_notices(); ?>
 		<form class="woocommerce-cart-form addify-quote-form" method="post" enctype="multipart/form-data">
@@ -299,7 +299,7 @@ if ( ! empty( WC()->session->get( 'quotes' ) ) || !empty($has_discount_rules) ) 
 	<div class="addify">
         <div class="before-quote--holder">
             <div class="quote--left">
-				<h4>Quote Type: <span id="selected-quote-type-title"><?php echo $quote_title; ?></span></h4>
+				<h4>Quote Type: <span id="selected-quote-type-title"><?php echo $quote_title; ?></span><span class="tooltip-icon"><img src="../wp-content/uploads/2025/09/information.webp" /><span class="tooltip-text">The selected quote type has been saved. To reset, please use the Clear Quote/Cart button.</span></span></h4>
                 <p class="cart-empty"><?php echo esc_html__( 'Your quote is currently empty.', 'addify_rfq' ); ?></p>
                 <button type="button" type="submit" id="afrfq_import_quote_btn" class="button afrfq_import_quote_btn" name="import_quote" value="Import Product List">
                     <?php echo 'Import Product List'; ?>
