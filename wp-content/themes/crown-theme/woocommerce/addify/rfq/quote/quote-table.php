@@ -346,7 +346,7 @@ if (isset($warnings) && is_array($warnings) && !empty($warnings)) {
 						}
 					</style>
                     <button type="button" id="afrfq_clear_quote__cart_btn" name="clear_quotes_cart" class="button" value="Clear Quote Cart">
-                        Clear Cart
+                        Clear Quote
                     </button>
 
                     <button type="button" type="submit" id="afrfq_import_quote_btn" class="button afrfq_import_quote_btn" name="import_quote" value="Import Product List">

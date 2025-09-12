@@ -720,7 +720,7 @@ if ( ! class_exists( 'AF_R_F_Q_Main' ) ) {
 								<button class="popup-close-button" id="bridgeport-close" aria-label="Close alert" type="button" data-close>
 									<span aria-hidden="true">&times;</span></button>
 								<div class="popup-content">
-									<p>To add this product to the quote, please clear your cart and try adding this product again since its not a bridgeport product. Thank you!</p>
+									<p>To add this product to the quote, please clear your quote and try adding this product again since its not a bridgeport product. Thank you!</p>
 								</div>
 							</div>';
 						echo '<div class="type-already-selected-warning-popup" id="type_already_selected_popup">
