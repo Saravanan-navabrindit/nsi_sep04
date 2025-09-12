@@ -672,7 +672,7 @@ if ( ! class_exists( 'AF_R_F_Q_Main' ) ) {
 								foreach ( $domains as $index => $domain ) {
 									$lowercase_domain = strtolower( $domain );
 
-									if ( str_contains( $email_to_check, $lowercase_domain ) ) {
+									if ( str_contains( $email_to_check, trim($lowercase_domain) ) ) {
 										$available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
 
 										if ( in_array( 'bridgeport', array_map( 'strtolower', $available_brands ), true ) ) {
