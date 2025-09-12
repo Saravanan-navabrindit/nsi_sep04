@@ -78,7 +78,7 @@ if(!empty(get_user_meta(get_current_user_id(), 'quote_pricing_groups'))) {
             <!-- </td>
 			<td colspan="<?php echo esc_attr( $colspan/2 ); ?>" class="actions extra-quote-actions right-cell"> -->
             <button type="button" id="afrfq_clear_discount_quote_btn" name="clear_discount_quotes_cart" class="button" value="Clear Quote">
-                <?php esc_html_e( 'Clear Cart', 'addify_rfq' ); ?>
+                <?php esc_html_e( 'Clear Quote', 'addify_rfq' ); ?>
             </button>
 
             <button type="button" id="afrfq_import_quote_pricing_btn" class="button afrfq_import_quote_pricing_btn afrfq_import_quote_profile_btn" name="import_quote" value="Import Product List">
