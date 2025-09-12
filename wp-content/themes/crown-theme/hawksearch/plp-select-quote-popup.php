@@ -13,7 +13,7 @@
 
 <div class="bridgeport-warning-popup" id="bridgeport-popup">
     <div class="popup-content">
-        <p>To add this product to the quote, please clear your cart and try adding this product again since its not a bridgeport product. Thank you!</p>
+        <p>To add this product to the quote, please clear your quote and try adding this product again since its not a bridgeport product. Thank you!</p>
         <button class="popup-close-button" type="button" data-close><span>&times;</span></button>
     </div>
 </div>
