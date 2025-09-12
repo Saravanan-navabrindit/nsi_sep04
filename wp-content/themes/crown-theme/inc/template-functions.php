@@ -897,7 +897,7 @@ function get_dual_shop_manager_allowed_brands( $user ) {
 
     $dsm_allowed_brands_string = '';
     foreach ( $dsm_allowed_brands_config['dsm-domain'] as $id => $domain ) {
-        if ( $domain == $user_email_domain ) {
+        if ( trim($domain) == trim($user_email_domain) ) {
             $dsm_allowed_brands_string = $dsm_allowed_brands_config['dsm-brands'][$id];
         }
     }

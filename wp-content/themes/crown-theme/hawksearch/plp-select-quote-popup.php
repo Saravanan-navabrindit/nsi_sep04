@@ -48,7 +48,7 @@
             if (!empty($domains) && !empty($brands)) {
                 foreach ($domains as $i => $domain) {
                     $lower = strtolower($domain);
-                    if ( str_contains($current_user_email, $lower) || str_contains($admin_user_email, $lower) ) {
+                    if ( str_contains($current_user_email, trim($lower)) || str_contains($admin_user_email, trim($lower)) ) {
                         $available_brands = isset($brands[$i]) ? array_map('trim', explode(',', $brands[$i])) : [];
                         $product_brand = isset($_POST['product_brand']) ? sanitize_text_field($_POST['product_brand']) : '';
 

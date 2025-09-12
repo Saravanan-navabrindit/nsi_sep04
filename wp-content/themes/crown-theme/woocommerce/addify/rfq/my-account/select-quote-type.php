@@ -52,7 +52,7 @@ if ( is_user_logged_in() && is_object( $addify_rfq ) && is_object( $addify_rfq->
         if ( ! empty( $domains ) && ! empty( $brands ) ) {
             foreach ( $domains as $index => $domain ) {
                 $lowercase_domain = strtolower( $domain );
-                if ( $email_to_check && str_contains( $email_to_check, $lowercase_domain ) ) {
+                if ( $email_to_check && str_contains( $email_to_check, trim($lowercase_domain) ) ) {
                     $available_brands = isset( $brands[ $index ] ) ? array_map( 'trim', explode( ',', $brands[ $index ] ) ) : array();
 
                     if ( in_array( 'bridgeport', array_map( 'strtolower', $available_brands ), true ) ) {
