@@ -302,7 +302,15 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 					$available_quote_subjects[] = $email_value['subject'];
 				}
 			}
-			if ( in_array($phpmailer->Subject, $available_quote_subjects) ) {
+            foreach ($available_quote_subjects as $subject) {
+				$subject = trim($subject);
+				if ($subject === '') continue;
+				if (stripos($phpmailer->Subject, $subject) !== false) {
+					$found = true;
+					break;
+				}
+			}
+			if($found) {
 				$file_name = 'quote_status.pdf';
                 $attachment_format = 'pdf';
 
@@ -575,18 +583,8 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
         public static function admin_qoute_update($quote_id) {
             $user = wp_get_current_user();
-            if ( empty( $user) ) {
-                return;
-            }
-
             if ( in_array( 'dual_shop_manager', (array) $user->roles, true ) ) {
-                $current_user_email = $user->user_email;
-                $current_user_email_domain = '';
-                if ( preg_match( '/(@[^,;\s]+)/', $current_user_email, $matches ) ) {
-                    $current_user_email_domain = $matches[1];
-                }
                 update_post_meta( $quote_id, '_created_by_dual_shop_manager', true );
-                update_post_meta( $quote_id, '_sales_rep_domain', $current_user_email_domain );
             } else {
                 $admin_id = isset( $_COOKIE['sac_admin_id'] ) ? $_COOKIE['sac_admin_id'] : 0;
                 $admin_user = get_user_by( 'id', $admin_id );
@@ -595,13 +593,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                     && $user->ID != $admin_id && $admin_id != 0
                     && isset( $admin_user->roles[0] ) && $admin_user->roles[0] === 'dual_shop_manager'
                 ) {
-                    $user_email = $admin_user->user_email;
-                    $user_email_domain = '';
-                    if ( preg_match( '/(@[^,;\s]+)/', $user_email, $matches ) ) {
-                        $user_email_domain = $matches[1];
-                    }
                     update_post_meta( $quote_id, '_created_by_dual_shop_manager', true );
-                    update_post_meta( $quote_id, '_sales_rep_domain', $user_email_domain );
                 }
             }
 
@@ -654,21 +646,32 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             if ( preg_match( '/(@[^,;\s]+)/', $current_user_email, $matches ) ) {
                 $current_user_email_domain = $matches[1];
             }
-            $customer_ids = Crown_Shop_Custom_Roles::get_sales_rep_customer_ids( $current_user_email_domain );
+
+            $customer_ids = ! empty( $current_user_email_domain ) ? get_users( array(
+                'fields' => 'ID',
+                'meta_query' => array(
+                    array( 'key' => 'ns_customer_rep_email_domain', 'value' => $current_user_email_domain )
+                )
+            ) ) : array();
 
             $queried_customer_user = isset( $_GET['_customer_user'] ) ? intval( $_GET['_customer_user'] ) : 0;
             if ( ! empty( $queried_customer_user ) && in_array( $queried_customer_user, $customer_ids ) ) {
                 $customer_ids = array( $queried_customer_user );
             }
-            $current_user_id = $current_user->ID;
-            $customer_ids[] = $current_user_id;
+            $customer_ids[] = $current_user->ID;
             if ( ! empty( $customer_ids ) ) {
-                $results = Crown_Shop_Custom_Roles::get_dual_shop_managers_allowed_quotes($customer_ids, 'ids', $current_user_email_domain, true);
-                if ( empty( $results ) ) {
-                    $results = array(0);
-                }
-                $query->set( 'post__in', $results );
-
+                $query->set( 'meta_query', array(
+                    array(
+                        'key' => '_customer_user',
+                        'value' => $customer_ids,
+                        'compare' => 'IN',
+                    ),
+                    array(
+                        'key' => '_created_by_dual_shop_manager',
+                        'value' => '1',
+                        'compare' => '=',
+                    ),
+                ) );
             } else {
                 $query->set( 'meta_query', array( array( 'key' => '_customer_user', 'value' => 0 ) ) );
             }
@@ -807,6 +810,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
 			$old_status = get_post_meta( $quote_id, 'quote_status', true );
 			$new_status = $old_status;
+
 
             global $post;
 
@@ -1039,7 +1043,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
 
 		public static function quote_converted_to_order( $order_id, $quote_id ) {
-
+         
             $af_checkout = new AF_C_F_Checkout();
 			global $post;
             $finalised_checkout_fields = [];
@@ -1992,7 +1996,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                 $nonce_name  = 'afquote-ajax-nonce';
                 $context_type = 'edit';
             }
-
+            
             $nonce_value = wp_create_nonce( $nonce_name );
             ?>
             <div id="afrfq_detail_pricing_import_modal" class="afrfq-modal" style="display: none;">
@@ -2407,7 +2411,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
             $file = $_FILES['import_pricing_xls_file'];
             $file_type = wp_check_filetype($file['name']);
-
+            
             // Validate file type
             if (!in_array($file_type['ext'], ['xls', 'xlsx'])) {
                 wp_send_json_error([
@@ -2459,7 +2463,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                 }
 
                 $group_name = sanitize_text_field($row['product pricing group']);
-
+                
                 if (strlen($group_name) > 100) {
                     self::$skipped_group_items['invalid'][] = $group_name;
                     continue;
@@ -2469,7 +2473,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                     self::$skipped_group_items['duplicate'][] = $group_name;
                     continue;
                 }
-
+                
                 if (in_array($group_name, array_column($saved_groups, 'group_name'))) {
                     self::$skipped_group_items['duplicate'][] = $group_name;
                     continue;
@@ -2505,7 +2509,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                     'group_name' => $group->group_name,
                     'price_name' => $group->price_name
                 ];
-
+                
                 $matched_groups[] = $new_group;
                 $saved_groups[] = $new_group;
             }
@@ -2514,7 +2518,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             if ($is_profile) {
                 WC()->session->set('quote_pricing_groups', $saved_groups);
                 update_user_meta(get_current_user_id(), 'quote_pricing_groups', $saved_groups);
-
+                
                 if (!empty($saved_groups)) {
                     foreach ($saved_groups as $group_id => $group_data) {
                         ?>
@@ -2564,7 +2568,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             }
 
             $pricing_groups_html = ob_get_clean();
-
+            
             self::get_pricing_xls_to_quote_messages($warning_messages);
             WC()->session->set('pricing_import_warnings', $warning_messages);
 
@@ -2575,7 +2579,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                 'message'             => 'Imported ' . count($matched_groups) . ' pricing groups successfully.'
             ]);
         }
-
+        
         public static function afrfq_process_detail_pricing_xls_file_to_quote() {
             // Validate nonce
             if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'afrfq_import_nonce')) {
@@ -2595,7 +2599,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
             $file = $_FILES['import_pricing_xls_file'];
             $file_type = wp_check_filetype($file['name']);
-
+            
             // Validate file type
             if (!in_array($file_type['ext'], ['xls', 'xlsx'])) {
                 wp_send_json_error([
@@ -2646,7 +2650,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                 }
 
                 $group_name = sanitize_text_field($row['product pricing group']);
-
+                
                 if (strlen($group_name) > 100) {
                     self::$skipped_group_items['invalid'][] = $group_name;
                     continue;
@@ -2656,7 +2660,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                     self::$skipped_group_items['duplicate'][] = $group_name;
                     continue;
                 }
-
+                
                 if (in_array($group_name, array_column($saved_groups, 'group_name'))) {
                     self::$skipped_group_items['duplicate'][] = $group_name;
                     continue;
@@ -2692,7 +2696,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                     'group_name' => $group->group_name,
                     'price_name' => $group->price_name
                 ];
-
+                
                 $matched_groups[] = $new_group;
                 $saved_groups[] = $new_group;
             }
@@ -2750,7 +2754,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             }
 
             $pricing_groups_html = ob_get_clean();
-
+            
             self::get_pricing_xls_to_quote_messages($warning_messages);
             WC()->session->set('pricing_import_warnings', $warning_messages);
 
@@ -2810,7 +2814,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
                 !empty($session_selected_quote_type) === $selected_quote_type = $session_selected_quote_type['id'] ? : 0;
             }
             $selected_quote_type_id = $selected_quote_type;
-
+            
             $quote_type_bridgeport_req = get_post_meta($selected_quote_type_id, 'quote_type_bridgeport_brand', true);
 
             $require_bridgeport = false;
@@ -3153,12 +3157,12 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
         }
 
         public static function handle_clear_quotes_cart_button(): void {
-            $unique_id = Eleks_Carts_Management::get_user_unique_session_id(get_current_user_id());
+            $user_id = get_current_user_id();
             $context_key = get_current_user_contextual_quote_type_key();
             update_user_meta( get_current_user_id(), $context_key, null );
             update_user_meta( get_current_user_id(), 'quote_pricing_groups', null );
             check_ajax_referer('clear_quotes_cart', 'nonce');
-            Eleks_Carts_Management::clear_quotes_carts(0, $unique_id);
+            Eleks_Carts_Management::clear_quotes_carts(0, [$user_id]);
             wp_send_json_success();
         }
 
