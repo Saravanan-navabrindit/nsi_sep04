@@ -1,6 +1,8 @@
 <?php
 
 
+use CrownShop\Enums\LogWooErrorType;
+
 if ( ! class_exists('Nsi_Helper') ) {
 	class Nsi_Helper {
 
@@ -140,12 +142,36 @@ if ( ! class_exists('Nsi_Helper') ) {
         }
 
         public static function update_addify_quote_user_meta( $quote_contents ) {
+            if ( ! $quote_contents ) {
+                return;
+            }
             $user_id = get_current_user_id();
-            if ( !Crown_Shop_Custom_Roles::is_switched_user() ) {
-                update_user_meta( $user_id, 'addify_quote', $quote_contents );
-            } else {
+            if ( Crown_Shop_Custom_Roles::is_switched_user() ) {
                 $id_for_usermeta = Eleks_Carts_Management::get_user_unique_session_id( $user_id );
-                update_user_meta( $user_id, '_addify_quote-cart_' . $id_for_usermeta, $quote_contents );
+            } else {
+                $id_for_usermeta = $user_id;
+                update_user_meta( $user_id, 'addify_quote', $quote_contents );
+            }
+            $quote_data = array(
+                'quotes' => $quote_contents,
+                'timestamp' => time()
+            );
+            update_user_meta($user_id, '_addify_quote-cart_' . $id_for_usermeta, $quote_data);
+        }
+
+        /**
+         * Log the error as WooCommerce error to the wc-logs folder.
+         *
+         * @param Throwable|Exception $e
+         * @param int $post_id
+         * @param  LogWooErrorType $logging_error_type will name the log file in wc-logs
+         * for example: LogWooErrorType::HANDLED_FATAL will create handled-fatal-errors-YYYY-MM-DD-[HASH].log file
+         * @return void
+         */
+        public static function log_wc_error(Throwable|Exception $e, int $post_id, LogWooErrorType $logging_error_type): void {
+            if (class_exists('WC_Logger')) {
+                $logger = wc_get_logger();
+                $logger->error('Handled FATAL: ' . $e->getMessage() . ' | Affected post ID: ' . $post_id, ['source' => $logging_error_type->value]);
             }
         }
 

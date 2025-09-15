@@ -54,23 +54,23 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
             self::clear_quotes_carts(self::$expiration_afrfq_cart_time);
         }
 
-        private static function clear_shopping_carts($exp_time = 0, $user_ids = []): int {
+        private static function clear_shopping_carts($exp_time = 0, $unique_id = ''): int {
             $cleared_count = 0;
-            $cleared_count += self::clear_shopping_session_carts($exp_time, $user_ids);
-            $cleared_count += self::clear_shopping_persistent_carts($exp_time, $user_ids);
+            $cleared_count += self::clear_shopping_session_carts($exp_time, $unique_id);
+            $cleared_count += self::clear_shopping_persistent_carts($exp_time, $unique_id);
             return $cleared_count;
         }
 
-        public static function clear_quotes_carts($exp_time = 0, $user_ids = []): int {
+        public static function clear_quotes_carts($exp_time = 0, $unique_id = ''): int {
             $cleared_count = 0;
-            $cleared_count += self::clear_quotes_session_carts($exp_time, $user_ids);
-            $persistant_arfq_clear_result = self::clear_quotes_persistent_carts($exp_time, $user_ids);
+            $cleared_count += self::clear_quotes_session_carts($exp_time, $unique_id);
+            $persistant_arfq_clear_result = self::clear_quotes_persistent_carts($exp_time, $unique_id);
             $cleared_count += $persistant_arfq_clear_result['count'];
             $cleared_count += self::clear_addify_quote_meta($persistant_arfq_clear_result['user_ids']);
             return $cleared_count;
         }
 
-        private static function clear_shopping_session_carts($exp_time = 0, $user_ids = []): int {
+        private static function clear_shopping_session_carts($exp_time = 0, $unique_id = ''): int {
             global $wpdb;
             $cleared_count = 0;
 
@@ -84,10 +84,9 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
                 $query_args[] = $expired_time;
             }
 
-            if (!empty($user_ids)) {
-                $placeholders = implode(',', array_fill(0, count($user_ids), '%d'));
-                $where_conditions[] = "session_key IN ($placeholders)";
-                $query_args = array_merge($query_args, $user_ids);
+            if (!empty($unique_id)) {
+                $where_conditions[] = "session_key = '%s'";
+                $query_args[] = $unique_id;
             }
 
             if (!empty($where_conditions)) {
@@ -123,25 +122,16 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
             return $cleared_count;
         }
 
-        private static function clear_shopping_persistent_carts($exp_time = 0, $user_ids = []): int {
+        private static function clear_shopping_persistent_carts($exp_time = 0, $unique_id = ''): int {
             global $wpdb;
             $cleared_count = 0;
-
-            $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} 
-                   WHERE meta_key LIKE '_woocommerce_persistent_cart_%'";
-            $where_conditions = [];
-            $query_args = [];
-
-            if (!empty($user_ids)) {
-                $placeholders = implode(',', array_fill(0, count($user_ids), '%d'));
-                $where_conditions[] = "user_id IN ($placeholders)";
-                $query_args = array_merge($query_args, $user_ids);
+            $query_args = '';
+            if( ! empty( $unique_id ) ){
+                $query_args = '_woocommerce_persistent_cart_' . $unique_id;
+                $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s";
+            } else {
+                $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE meta_key LIKE '_woocommerce_persistent_cart_%'";
             }
-
-            if (!empty($where_conditions)) {
-                $meta_query .= " AND " . implode(' AND ', $where_conditions);
-            }
-
             if (!empty($query_args)) {
                 $meta_query = $wpdb->prepare($meta_query, $query_args);
             }
@@ -177,7 +167,7 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
             return $cleared_count;
         }
 
-        private static function clear_quotes_session_carts($exp_time = 0, $user_ids = []): int {
+        private static function clear_quotes_session_carts($exp_time = 0, $unique_id = ''): int {
             global $wpdb;
             $cleared_count = 0;
             $query = "SELECT session_key, session_value, session_expiry FROM {$wpdb->prefix}woocommerce_sessions";
@@ -189,10 +179,9 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
                 $where_conditions[] = "session_expiry < %d";
                 $query_args[] = $expired_time;
             }
-            if (!empty($user_ids)) {
-                $placeholders = implode(',', array_fill(0, count($user_ids), '%d'));
-                $where_conditions[] = "session_key IN ($placeholders)";
-                $query_args = array_merge($query_args, $user_ids);
+            if (!empty($unique_id)) {
+                $where_conditions[] = "session_key = '%s'";
+                $query_args[] = $unique_id;
             }
             if (!empty($where_conditions)) {
                 $query .= " WHERE " . implode(' AND ', $where_conditions);
@@ -223,23 +212,17 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
             return $cleared_count;
         }
 
-        private static function clear_quotes_persistent_carts($exp_time = 0, $user_ids = []): array {
+        private static function clear_quotes_persistent_carts($exp_time = 0, $unique_id = ''): array {
             global $wpdb;
             $cleared_count = 0;
             $affected_user_ids = [];
+            $query_args = '';
 
-            $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta}
-                   WHERE meta_key LIKE '_addify_quote-cart_%'";
-            $where_conditions = [];
-            $query_args = [];
-
-            if (!empty($user_ids)) {
-                $placeholders = implode(',', array_fill(0, count($user_ids), '%d'));
-                $where_conditions[] = "user_id IN ($placeholders)";
-                $query_args = array_merge($query_args, $user_ids);
-            }
-            if (!empty($where_conditions)) {
-                $meta_query .= " AND " . implode(' AND ', $where_conditions);
+            if( ! empty( $unique_id ) ){
+                $query_args = '_addify_quote-cart_' . $unique_id;
+                $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE meta_key = %s";
+            } else {
+                $meta_query = "SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE meta_key LIKE '_addify_quote-cart_%'";
             }
             if (!empty($query_args)) {
                 $meta_query = $wpdb->prepare($meta_query, $query_args);
@@ -354,8 +337,8 @@ if ( ! class_exists( 'Eleks_Carts_Management' ) ) {
 
         public static function handle_clear_shopping_cart_button() {
             check_ajax_referer('clear_shopping_cart', 'nonce');
-            $user_id = get_current_user_ID();
-            self::clear_shopping_carts(0, [$user_id]);
+            $unique_id = self::get_user_unique_session_id(get_current_user_id());
+            self::clear_shopping_carts(0, $unique_id);
             wp_send_json_success();
         }
 
