@@ -99,7 +99,7 @@ if ( ! empty( WC()->session->get( 'quotes' ) ) || !empty($has_discount_rules) ) 
 	<h4>Quote Type: <span id="selected-quote-type-title"><?php echo $quote_title; ?></span><span class="tooltip-icon"><img src="../wp-content/uploads/2025/09/information.webp" /><span class="tooltip-text">The selected quote type has been saved. To reset, please use the Cancel Quote/Clear Cart.</span></span></h4>
 	<div class="woocommerce">
 		<?php woocommerce_output_all_notices(); ?>
-		<form class="woocommerce-cart-form addify-quote-form" method="post" enctype="multipart/form-data">
+		<form class="woocommerce-cart-form addify-quote-form <?php echo $has_discount_rules ? 'discount-quote-form' : ''; ?>" method="post" enctype="multipart/form-data">
 			
 			<?php
 			if ( $has_discount_rules ) {
@@ -269,7 +269,30 @@ if ( ! empty( WC()->session->get( 'quotes' ) ) || !empty($has_discount_rules) ) 
                 }
                 updateRequiredAttributes();
 
-            });
+				$('form.discount-quote-form').on('submit', function(e) {
+				var pricingGroupCount = $(this).find('table.shop_table tbody tr').length;
+
+				if (pricingGroupCount === 0) {
+					e.preventDefault();
+
+					$('.woocommerce-error.custom-pricing-error').remove();
+					
+					var errorMessage = '<ul class="woocommerce-error custom-pricing-error" role="alert"><li>No pricing groups found in your quote request. Please add at least one group.</li></ul>';
+
+					var noticeWrapper = $('.woocommerce-notices-wrapper').first();
+					if (noticeWrapper.length) {
+						noticeWrapper.html(errorMessage);
+					} else {
+						$(this).prepend(errorMessage);
+					}
+					
+					$('html, body').animate({
+						scrollTop: $(this).offset().top - 100
+					}, 500);
+				}
+			});
+
+		});
         </script>
 
 	</div>
