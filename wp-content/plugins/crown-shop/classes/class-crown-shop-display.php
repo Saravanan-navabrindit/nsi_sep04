@@ -905,8 +905,10 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 		public static function woocommerce_output_product_data_tabs() {
 			global $product;
 			$docs = get_post_meta( get_the_ID(), 'product_doc_data', true );
+            $docs = is_array($docs) ? $docs : (is_string($docs) ? [$docs] : []);
 			$videos = get_post_meta( get_the_ID(), 'product_video_data', true );
-			?>
+            $videos = is_array($videos) ? $videos : (is_string($videos) ? [$videos] : []);
+            ?>
 				<div class="wp-block-crown-blocks-tabbed-content is-style-boxed">
 					<div class="inner">
 						<div class="tabbed-content-tabs">
@@ -939,10 +941,13 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 														<div class="entry-documents">
 															<h4>Documents</h4>
 															<ul>
-																<?php foreach ( $docs as $doc ) { ?>
+																<?php foreach ( $docs as $i => $doc ) {
+                                                                        $doc_name = isset($doc['filename']) ? $doc['filename'] : 'Document' . $i + 1;
+                                                                        $doc_src = isset($doc['src']) ? $doc['src'] : $doc;
+                                                                    ?>
 																	<li>
-																		<span class="name"><?php echo $doc['filename']; ?></span>
-																		<span class="download"><a href="<?php echo self::convert_amplifi_cdn_src( $doc['src'] ); ?>" target="_blank" class="btn btn--outline btn--outline-black">Download</a></span>
+																		<span class="name"><?php echo $doc_name; ?></span>
+																		<span class="download"><a href="<?php echo self::convert_amplifi_cdn_src( $doc_src ); ?>" target="_blank" class="btn btn--outline btn--outline-black">Download</a></span>
 																	</li>
 																<?php } ?>
 															</ul>
@@ -955,10 +960,13 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
                                                         <div class="entry-documents">
                                                             <h4>Video resources</h4>
                                                             <ul>
-																<?php foreach ( $videos as $video ) { ?>
+																<?php foreach ( $videos as $i => $video ) {
+                                                                    $video_filename = isset($video['filename']) ? $video['filename'] : 'Video ' . $i + 1;
+                                                                    $video_src = isset($video['src']) ? $video['src'] : $video;
+                                                                    ?>
                                                                     <li>
-                                                                        <span class="name"><?php echo $video['filename']; ?></span>
-                                                                        <span class="download"><a href="<?php echo self::convert_amplifi_cdn_src( $video['src'] ); ?>" target="_blank" class="btn btn--outline btn--outline-black">View video</a></span>
+                                                                        <span class="name"><?php echo $video_filename; ?></span>
+                                                                        <span class="download"><a href="<?php echo self::convert_amplifi_cdn_src( $video_src ); ?>" target="_blank" class="btn btn--outline btn--outline-black">View video</a></span>
                                                                     </li>
 																<?php } ?>
                                                             </ul>
@@ -1284,8 +1292,9 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 		public static function filter_woocommerce_product_get_image( $image, $product, $size, $attr, $placeholder, $image_orig ) {
 			$post_id = $product->get_id();
             try {
-                $image_srcs = get_post_meta( $post_id, '__product_image_srcs', false );
-                if ( is_array( $image_srcs ) && ! empty( $image_srcs ) ) {
+                $image_srcs = get_post_meta( $post_id, '__product_image_srcs', true );
+                $image_srcs = is_array($image_srcs) ? $image_srcs : (is_string($image_srcs) && !empty($image_srcs) ? [$image_srcs] : []);
+                if ( is_array( $image_srcs ) && ! empty( $image_srcs[0] ) ) {
                     $image_src = self::convert_amplifi_cdn_src( $image_srcs[0] );
                     if ( in_array( $size, array( 'thumbnail' ) ) ) {
                         $image_src .= '_small.jpg';
@@ -1299,36 +1308,41 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
                 }
             }
             catch ( \Throwable $e ) {
-                if ( class_exists( 'WC_Logger' ) ) {
-                    $logger = wc_get_logger();
-                    $logger->error( 'Handled FATAL in filter_woocommerce_product_get_image: '
-                            . $e->getMessage() . ' | Affected product ID: ' . $post_id, array( 'source' => LogWooErrorType::HANDLED_FATAL->value ) );
-                }
+                Nsi_Helper::log_wc_error($e, $post_id, LogWooErrorType::HANDLED_FATAL);
             }
 			return $image;
 		}
 
         public static function custom_woocommerce_product_get_gallery_image_ids($image_ids, $product) {
-            $post_id = $product->get_id();
-            $custom_image_srcs = get_post_meta($post_id, '__product_image_srcs', false);
-            if (!empty($custom_image_srcs)) {
-                $image_ids = array_map(function($src) {
-                    return self::convert_amplifi_cdn_src($src);
-                }, $custom_image_srcs);
+            try {
+                $post_id = $product->get_id();
+                $custom_image_srcs = get_post_meta($post_id, '__product_image_srcs', true);
+                $custom_image_srcs = is_array($custom_image_srcs)
+                        ? $custom_image_srcs
+                        : (is_string($custom_image_srcs) && !empty($custom_image_srcs) ? [$custom_image_srcs] : []);
+                if ( !empty($custom_image_srcs) && is_array($custom_image_srcs) ) {
+                    $image_ids = array_map(function($src) {
+                        return self::convert_amplifi_cdn_src($src);
+                    }, $custom_image_srcs);
+                }
+            } catch ( \Throwable $e ) {
+                Nsi_Helper::log_wc_error($e, $post_id, LogWooErrorType::HANDLED_FATAL);
             }
             return $image_ids;
         }
 
 		public static function convert_amplifi_cdn_src( $src ): string {
-			$src = preg_replace( '/^https:\/\/fs\.amplifi\.io\/file\?id=/', 'https://cdn.amplifi.pattern.com/', $src );
-			return $src;
+            return is_string( $src )
+                    ? preg_replace( '/^https:\/\/fs\.amplifi\.io\/file\?id=/', 'https://cdn.amplifi.pattern.com/', $src )
+                    : '';
 		}
 
 
 		public static function filter_woocommerce_single_product_image_thumbnail_html( $html, $post_thumbnail_id ) {
 			global $product;
 			$post_id = $product->get_id();
-			$image_srcs = get_post_meta( $post_id, '__product_image_srcs', false );
+            $image_srcs = get_post_meta( $post_id, '__product_image_srcs', true );
+            $image_srcs = is_array($image_srcs) ? $image_srcs : (is_string($image_srcs) && !empty($image_srcs) ? [$image_srcs] : []);
 			if ( is_array( $image_srcs ) && ! empty( $image_srcs ) ) {
 				$image_src = self::convert_amplifi_cdn_src( $image_srcs[0] );
 				$thumb_src = $image_src . '_small.jpg';
@@ -1342,7 +1356,8 @@ if ( ! class_exists( 'Crown_Shop_Display' ) ) {
 		public static function woocommerce_show_product_thumbnails() {
 			global $product;
 			$post_id = $product->get_id();
-			$image_srcs = get_post_meta( $post_id, '__product_image_srcs', false );
+            $image_srcs = get_post_meta( $post_id, '__product_image_srcs', true );
+            $image_srcs = is_array($image_srcs) ? $image_srcs : (is_string($image_srcs) && !empty($image_srcs) ? [$image_srcs] : []);
 			if ( is_array( $image_srcs ) && ! empty( $image_srcs ) ) {
 				$primary_image_src = array_shift( $image_srcs );
 				foreach ( $image_srcs as $image_src ) {
@@ -1833,6 +1848,8 @@ SKU QUANTITY"
 
 			}die;
 		}
+
+
 
         public function remove_reviews_tab( $tabs ) {
             unset( $tabs['reviews'] );
