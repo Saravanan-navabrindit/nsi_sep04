@@ -302,7 +302,15 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 					$available_quote_subjects[] = $email_value['subject'];
 				}
 			}
-			if ( in_array($phpmailer->Subject, $available_quote_subjects) ) {
+            foreach ($available_quote_subjects as $subject) {
+				$subject = trim($subject);
+				if ($subject === '') continue;
+				if (stripos($phpmailer->Subject, $subject) !== false) {
+					$found = true;
+					break;
+				}
+			}
+			if($found) {
 				$file_name = 'quote_status.pdf';
                 $attachment_format = 'pdf';
 
@@ -1004,7 +1012,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 		 * @return void
 		 */
 		public static function send_email_to_customer( $quote_id ) {
-			
+
 			// Email to customer.
 			$af_fields_obj = new AF_R_F_Q_Quote_Fields();
 			$user_name     = $af_fields_obj->afrfq_get_user_name( $quote_id );
@@ -1032,7 +1040,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
 			$pdf_file_path = self::generate_pdf($customer_email_html, $file_name);
 			$attachments[] = $pdf_file_path;
-	
+
 			wp_mail( $user_email, $email_subject, $customer_email_html, $headers, $attachments );
 		}
 		
