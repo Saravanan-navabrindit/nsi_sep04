@@ -301,7 +301,6 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 				if (!empty($email_value['subject'])) {
 					$available_quote_subjects[] = $email_value['subject'];
 				}
-				
 			}
             foreach ($available_quote_subjects as $subject) {
 				$subject = trim($subject);
@@ -314,6 +313,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 			if($found) {
 				$file_name = 'quote_status.pdf';
                 $attachment_format = 'pdf';
+
 				if (preg_match('/(?:request-quote\/|post=)(\d+)/', $phpmailer->Body, $matches)) {
                     self::$current_quote_id = intval( $matches[1] );
                     if ( ! isset( self::$temporary_files_by_quote[ self::$current_quote_id ] ) ) {
@@ -363,6 +363,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
             }
 			$pdf_file_path = $temp_dir . $file_name;
 			file_put_contents($pdf_file_path, $dompdf->output());
+
 			return $pdf_file_path;
 		}
 
@@ -1011,6 +1012,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 		 * @return void
 		 */
 		public static function send_email_to_customer( $quote_id ) {
+
 			// Email to customer.
 			$af_fields_obj = new AF_R_F_Q_Quote_Fields();
 			$user_name     = $af_fields_obj->afrfq_get_user_name( $quote_id );
@@ -1038,6 +1040,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
 			$pdf_file_path = self::generate_pdf($customer_email_html, $file_name);
 			$attachments[] = $pdf_file_path;
+
 			wp_mail( $user_email, $email_subject, $customer_email_html, $headers, $attachments );
 		}
 		
@@ -2412,7 +2415,7 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 
             $file = $_FILES['import_pricing_xls_file'];
             $file_type = wp_check_filetype($file['name']);
-            
+
             // Validate file type
             if (!in_array($file_type['ext'], ['xls', 'xlsx'])) {
                 wp_send_json_error([
