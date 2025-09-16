@@ -473,10 +473,22 @@ class AF_R_F_Q_Email_Controller {
 		$customer_info = array();
 		$quote_date    = gmdate( 'F j, Y, g:i a', get_post_time( 'U', false, $quote_id, true ) );
 
+		$quote_type_id = get_post_meta( $quote_id, 'quote_type', true );
+		$quote_type    = '';
+		if ( ! empty( $quote_type_id ) ) {
+			$quote_type = get_post_meta( $quote_type_id, 'quote_type_name', true );
+		}
+
 		$customer_info['quote_id']   = array(
 			'label' => __( 'Quote Number', 'addify_rfq' ),
 			'value' => '<a href="' . get_edit_post_link( $quote_id ) . '" target="_blank">' . $quote_id . '</a>',
 		);
+		if ( ! empty( $quote_type ) ) {
+			$customer_info['quote_type'] = array(
+				'label' => __( 'Quote Type', 'addify_rfq' ),
+				'value' => esc_html( $quote_type ),
+			);
+		}
 		$customer_info['quote_date'] = array(
 			'label' => __( 'Quote Date', 'addify_rfq' ),
 			'value' => $quote_date,
