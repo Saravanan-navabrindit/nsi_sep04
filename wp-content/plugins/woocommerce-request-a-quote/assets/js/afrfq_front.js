@@ -413,15 +413,7 @@ jQuery(document).on('click', '.remove-quote-item', function (e) {
 			if( response['quote_empty'] ){
 				localStorage.removeItem('selected_quote_type');
                 localStorage.setItem('open_myaccount_popup', '1');
-				fetch(my_ajax_obj.ajax_url, {
-					method: "POST",
-					body: new URLSearchParams({
-						action: "unset_selected_quote_type"
-					}),
-				}).then(response => response.json())
-					.then(data => {
-						window.location.href = '../my-account/';
-				});
+				location.reload();
 			}
 
 			jQuery('div.woocommerce-notices-wrapper').html(response['message'] );
