@@ -302,7 +302,6 @@ if ( ! class_exists( 'Crown_Shop_Rfq' ) ) {
 					$available_quote_subjects[] = $email_value['subject'];
 				}
 			}
-            $found = false;
             foreach ($available_quote_subjects as $subject) {
 				$subject = trim($subject);
 				if ($subject === '') continue;
