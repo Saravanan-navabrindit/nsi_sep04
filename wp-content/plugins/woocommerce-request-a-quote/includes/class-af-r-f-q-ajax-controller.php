@@ -1596,18 +1596,18 @@ class AF_R_F_Q_Ajax_Controller {
 
 				if ( $type == 'profile' ) {
 					add_filter( 'filter_admin_quote_email_subject', function( $email_subject ) use ($post_id) {
-						$new_email_subject = 'Revised Quote: ' . $post_id;
+						$new_email_subject = 'Revised Quote';
 						return $new_email_subject;
                 	} );
 					add_filter( 'filter_customer_quote_email_subject', function( $email_subject ) use ($post_id, $quote_totals) {
 						$distributor_name = get_post_meta( $post_id, 'afrfq_field_5822579', true );
 
 						if ( $distributor_name && $quote_totals ) {
-							$new_email_subject = 'Revised Quote: ' . $post_id . ': ' . $distributor_name . ': $' . number_format($quote_totals['_subtotal'], 2);
+							$new_email_subject = 'Revised Quote: ' . $distributor_name . ': $' . number_format($quote_totals['_subtotal'], 2);
 						} elseif ( $distributor_name ) {
-							$new_email_subject = 'Revised Quote: ' . $post_id . ': ' . $distributor_name;
+							$new_email_subject = 'Revised Quote: ' . $distributor_name;
 						} else {
-							$new_email_subject = 'Revised Quote: ' . $post_id;
+							$new_email_subject = 'Revised Quote';
 						}
 						return $new_email_subject;
 					} );
@@ -1719,18 +1719,18 @@ class AF_R_F_Q_Ajax_Controller {
 
 				if ( $type == 'profile' ) {
 					add_filter( 'filter_admin_quote_email_subject', function( $email_subject ) use ($post_id) {
-						$new_email_subject = 'Revised Quote: ' . $post_id;
+						$new_email_subject = 'Revised Quote';
 						return $new_email_subject;
                 	} );
 					add_filter( 'filter_customer_quote_email_subject', function( $email_subject ) use ($post_id, $quote_totals) {
 						$distributor_name = get_post_meta( $post_id, 'afrfq_field_5822579', true );
 
 						if ( $distributor_name && $quote_totals ) {
-							$new_email_subject = 'Revised Quote:' . $post_id . ': ' . $distributor_name . ': $' . number_format($quote_totals['_subtotal'], 2);
+							$new_email_subject = 'Revised Quote: ' . $distributor_name . ': $' . number_format($quote_totals['_subtotal'], 2);
 						} elseif ( $distributor_name ) {
-							$new_email_subject = 'Revised Quote:' . $post_id . ': ' . $distributor_name;
+							$new_email_subject = 'Revised Quote: ' . $distributor_name;
 						} else {
-							$new_email_subject = 'Revised Quote:' . $post_id;
+							$new_email_subject = 'Revised Quote';
 						}
 						return $new_email_subject;
 					} );
